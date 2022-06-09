@@ -14,7 +14,17 @@ import yaml
 from src.bdaq_supply import PowerManager
 import time
 import signal
+import argparse
 from datetime import datetime
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-b', default=3.0, help='Bias voltage for PSUB/PWELL or HV')
+parser.add_argument('-p', default='/dev/ttyUSB0', help='serial port')
+args = parser.parse_args()
+
+
+
+
 
 # =========   begin handle ctrl-C    =========
 def exit_handler(signum, frame):
@@ -25,9 +35,10 @@ signal.signal(signal.SIGINT, exit_handler)
 # =========   end handle ctrl-C    =========
 
 
+bias = float(args.b)
+print("Bias voltage {:2.1f}".format(bias))
 
-
-with PowerManager() as pm:
+with PowerManager(serial=args.p, bias=bias) as pm:
     # -------    begin the testing-payload    -------
     print("ctrl-C to poweroff again and exit")
     while True:

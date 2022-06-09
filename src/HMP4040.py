@@ -56,7 +56,7 @@ class Channel:
     
         
 class HMP4040:    
-    def __init__(self, port='/dev/ttyUSB1', autoopen=True, debug=False):
+    def __init__(self, port='/dev/ttyUSB0', autoopen=True, debug=False):
         self.serial = serial.Serial(port, 115200, timeout=1)
         self.debug = debug
         self.ch = {}
