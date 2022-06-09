@@ -70,13 +70,14 @@ class PowerManager():
     def shutdown(self, before=False):
         if not before:
             print("Powering off...", end='', flush=True)
-        for v in np.linspace(self.bias, 0.1, 5):
+        for v in np.linspace(self.bias, 0.1, 10):
             self.ch_bias.setVoltage(v)
-        time.sleep(0.5)
         self.ch_bdaq.setOn(False)
-        self.ch_bias.setOn(False)
         time.sleep(0.5)
         self.ch_chip.setOn(False)
+        self.ch_bias.setOn(False)
+        
+        
         if not before:
             print(" [Done]\ngood night!")
 
