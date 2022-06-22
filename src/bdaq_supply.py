@@ -7,13 +7,16 @@ import numpy as np
 
 
 class PowerManager():
-    def __init__(self, serial, bias):
+    def __init__(self, serial, bias, hv):
         self.ps = HMP4040(port=serial)
         self.bias = bias
+        self.hv = hv
         
         self.ch_bdaq = self.ps.out1   # supply for the bdaq board
         self.ch_chip = self.ps.out4   # supply for the chip (digital)
-        self.ch_bias = self.ps.out2   # supply for the Bias/HV supply
+        
+        self.ch_bias = self.ps.out2   # supply for the Bias supply
+        self.ch_hv   = self.ps.out3   # supply for the HV supply
     
     def __enter__(self):
         self.startup()
@@ -40,20 +43,33 @@ class PowerManager():
         self.ch_bdaq.setFuse(delay=50)
         self.ch_chip.linkFuse(self.ch_bdaq.ch)
         
-        self.ch_bias.setVoltage(0.1)
+        self.ch_bias.setVoltage(0.0)
         self.ch_bias.setCurrent(0.001)
         self.ch_bias.setFuse(delay=50)
         self.ch_bias.linkFuse(self.ch_bdaq.ch)
         self.ch_bias.linkFuse(self.ch_chip.ch)
         self.ch_chip.linkFuse(self.ch_bias.ch)
         
+        self.ch_hv.setVoltage(0.0)
+        self.ch_hv.setCurrent(0.001)
+        self.ch_hv.setFuse(delay=50)
+        self.ch_hv.linkFuse(self.ch_bdaq.ch)
+        self.ch_hv.linkFuse(self.ch_chip.ch)
+        self.ch_chip.linkFuse(self.ch_hv.ch)
+        
         self.ch_bias.setOn(True)
+        self.ch_hv.setOn(True)
         time.sleep(0.1)
         self.ch_chip.setOn(True)
         time.sleep(0.1)
         self.ch_bdaq.setOn(True)
-        for v in np.linspace(0.1, self.bias, 5):
-            self.ch_bias.setVoltage(v)
+        if(self.bias != 0):
+            for v in np.linspace(0., self.bias, 10):
+                self.ch_bias.setVoltage(v)
+           
+        if(self.hv != 0): 
+            for v in np.linspace(0., self.hv, 10):
+                self.ch_hv.setVoltage(v)
         
         print("Power is up!")
         #time.sleep(0.5)
@@ -70,12 +86,18 @@ class PowerManager():
     def shutdown(self, before=False):
         if not before:
             print("Powering off...", end='', flush=True)
-        for v in np.linspace(self.bias, 0.1, 10):
-            self.ch_bias.setVoltage(v)
+        if(self.hv != 0):
+            for v in np.linspace(self.hv, 0., 10):
+                self.ch_hv.setVoltage(v)
+        if(self.bias != 0):
+            for v in np.linspace(self.bias, 0., 10):
+                self.ch_bias.setVoltage(v)
+        time.sleep(0.5)
         self.ch_bdaq.setOn(False)
         time.sleep(0.5)
         self.ch_chip.setOn(False)
         self.ch_bias.setOn(False)
+        self.ch_hv.setOn(False)
         
         
         if not before:

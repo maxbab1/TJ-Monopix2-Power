@@ -1,6 +1,21 @@
 # TJ-Monopix2-Power
 Power supply helper program for Hameg power supplies
 
+# Usage
+
+Connections of the power supply:
+* CH1: BDAQ53 Board (5V)
+* CH2: TJ-Monopix2 PSUB/PWELL
+* CH3: TJ-Monopix2 HV
+* CH4: TJ-Monopix2 LV (1.8V)
+
+If you want to bias the chip with PSUB/PWELL, you need to specify the ```--bias``` parameter. When there is nothing more specified, it defaults to 3V, or you can use eg ```--bias 5``` for 5 volts.
+
+If you want to bias the chip with HV, you need to specify the ```--hv``` parameter. When there is nothing more specified, it defaults to 5V, or you can use eg ```--hv 10``` for 10 volts.
+
+Both options from above are mutally exclusive, except you use the ```--f``` flag.
+
+You can specify a custom seial port via ```-p /dev/ttyUSB0```
 
 
 
@@ -27,13 +42,17 @@ connect USB and use ```dmesg | grep usb``` to find the serial number of connecte
     SUBSYSTEMS=="usb", KERNEL=="ttyUSB*", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="ed72", ATTRS{serial}=="A8008uJY", SYMLINK+="ttyMP2"
 
 
-# Usage
+# Help
 
-usage: bdaq_supply [-h] [-b B] [-p P]
+usage: standalone_power.py [-h] [--bias [BIAS [BIAS ...]]] [--hv [HV [HV ...]]] [-f] [-p P]
 
 optional arguments:
-  -h, --help  show this help message and exit
-  -b B        Bias voltage for PSUB/PWELL or HV
-  -p P        serial port
+  -h, --help            show this help message and exit
+  --bias [BIAS [BIAS ...]]
+                        Bias voltage for PSUB/PWELL on CH2 of PS
+  --hv [HV [HV ...]]    Bias voltage for HV on CH3 of PS
+  -f                    accept nonzero Bias and HV at the same time
+  -p P                  serial port
+
 
 
