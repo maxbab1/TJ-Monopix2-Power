@@ -37,7 +37,7 @@ And for the command alias of ''
 
 connect USB and use ```dmesg | grep usb``` to find the serial number of connected device
 
-```sudo vim /dev/udev/rules.d/80-hameg.rules```  # and add (with the correct serial number)
+```sudo vim /etc/udev/rules.d/80-hameg.rules```  # and add (with the correct serial number)
 
     SUBSYSTEMS=="usb", KERNEL=="ttyUSB*", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="ed72", ATTRS{serial}=="A8008uJY", SYMLINK+="ttyMP2"
 
