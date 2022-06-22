@@ -19,7 +19,7 @@ from datetime import datetime
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-b', default=3.0, help='Bias voltage for PSUB/PWELL or HV')
-parser.add_argument('-p', default='/dev/ttyUSB0', help='serial port')
+parser.add_argument('-p', default='/dev/ttyMP2', help='serial port')
 args = parser.parse_args()
 
 
