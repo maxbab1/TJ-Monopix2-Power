@@ -23,6 +23,12 @@ class PowerManager():
         self.shutdown()
     
     
+    def ramp_up_hv(self):
+        self.ch_bias.setOn(True)
+        
+        for v in np.linspace(0.1, self.bias, 5):
+            self.ch_bias.setVoltage(v)
+        print("HV Power is up!")
     
     def startup(self):
         if not self.ps.allOff():
@@ -31,7 +37,7 @@ class PowerManager():
             time.sleep(0.5)
             
         self.ps.reset()
-        self.ch_chip.setVoltage(1.8)
+        self.ch_chip.setVoltage(2.0)
         self.ch_chip.setCurrent(0.8)
         self.ch_chip.setFuse(delay=10)
         
@@ -41,21 +47,18 @@ class PowerManager():
         self.ch_chip.linkFuse(self.ch_bdaq.ch)
         
         self.ch_bias.setVoltage(0.1)
-        self.ch_bias.setCurrent(0.001)
+        self.ch_bias.setCurrent(0.002)
         self.ch_bias.setFuse(delay=50)
         self.ch_bias.linkFuse(self.ch_bdaq.ch)
         self.ch_bias.linkFuse(self.ch_chip.ch)
         self.ch_chip.linkFuse(self.ch_bias.ch)
         
-        self.ch_bias.setOn(True)
-        time.sleep(0.1)
-        self.ch_chip.setOn(True)
         time.sleep(0.1)
         self.ch_bdaq.setOn(True)
-        for v in np.linspace(0.1, self.bias, 5):
-            self.ch_bias.setVoltage(v)
+        time.sleep(0.1)
+        self.ch_chip.setOn(True)
         
-        print("Power is up!")
+        print("LV Power is up!")
         #time.sleep(0.5)
         #print("Power is up, waiting for ping response...", end='', flush=True)
         #for i in range(20):
@@ -72,10 +75,12 @@ class PowerManager():
             print("Powering off...", end='', flush=True)
         for v in np.linspace(self.bias, 0.1, 10):
             self.ch_bias.setVoltage(v)
-        self.ch_bdaq.setOn(False)
+        
+        self.ch_bias.setOn(False)
         time.sleep(0.5)
         self.ch_chip.setOn(False)
-        self.ch_bias.setOn(False)
+        self.ch_bdaq.setOn(False)
+        
         
         
         if not before:
