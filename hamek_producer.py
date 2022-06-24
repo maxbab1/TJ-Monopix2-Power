@@ -85,6 +85,11 @@ class HamekProducer(pyeudaq.Producer):
                     self.SetStatusTag(ch.name, ch.info())
             time.sleep(1)
 
+    def DoTerminate(self):
+        if self.power_mng:
+            self.power_mng.shutdown()
+            time.sleep(3)  # block until finished powering off
+
 
 if __name__ == '__main__':
     # Parse program arguments
