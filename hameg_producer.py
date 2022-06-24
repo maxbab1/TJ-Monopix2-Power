@@ -94,7 +94,7 @@ class HamekProducer(pyeudaq.Producer):
 if __name__ == '__main__':
     # Parse program arguments
     description = 'Start EUDAQ producer for Hamek PS'
-    parser = argparse.ArgumentParser(prog='hamek_producer',
+    parser = argparse.ArgumentParser(prog='Hameg_producer',
                                      description=description,
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-r', metavar='address',
@@ -104,7 +104,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    producer = HamekProducer('hamek', args.r)
+    producer = HamekProducer('Hameg', args.r)
     print('connecting to runcontrol in ', args.r)
     producer.Connect()
     time.sleep(2)
