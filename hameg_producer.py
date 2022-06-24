@@ -104,13 +104,15 @@ if __name__ == '__main__':
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-r', metavar='address',
                         help='Destination address',
-                        default='tcp://localhost:44000',
-                        nargs='?')
+                        default='tcp://localhost:44000')
+    parser.add_argument('-n', metavar='name',
+                        help='Producer name',
+                        default='hameg')
 
     args = parser.parse_args()
 
-    producer = HamegProducer('Hameg', args.r)
-    print('connecting to runcontrol in ', args.r)
+    producer = HamegProducer(args.n, args.r)
+    print(f'producer {args.n} connecting to runcontrol in {args.r}')
     producer.Connect()
     time.sleep(2)
     while producer.IsConnected():
