@@ -29,7 +29,8 @@ class CHWrapper:
         self.measure()
         return f'{self.u} V {self.i * 1e3} mA'
 
-class HamekProducer(pyeudaq.Producer):
+
+class HamegProducer(pyeudaq.Producer):
     def __init__(self, name, runctrl):
         pyeudaq.Producer.__init__(self, name, runctrl)
         self.is_running = 0
@@ -44,15 +45,18 @@ class HamekProducer(pyeudaq.Producer):
 
     def DoInitialise(self):
         self.ini = self.GetInitConfiguration()
+        # actually no init items needed, store for possible future uses
 
     def DoConfigure(self):
         self.conf = self.GetConfiguration()
 
-        tmp = self.conf.Get('BIAS')
+        #  TODO: generalize me, use Ch1, ..., Ch4 instead of Monopix2 voltage
+        #   names, maybe also make current and slope configurable
+        tmp = self.conf.Get('BIAS')  # voltage 'BIAS', Ch2
         bias = 0.0
         if tmp:
             bias = float(tmp)
-        tmp = self.conf.Get('HV')
+        tmp = self.conf.Get('HV')  # voltage 'HV', Ch3
         hv = 0.0
         if tmp:
             hv = float(tmp)
@@ -83,6 +87,7 @@ class HamekProducer(pyeudaq.Producer):
             for ch in self.channels:
                 if self.is_running:
                     self.SetStatusTag(ch.name, ch.info())
+                    # we do not send any events, just updating the status with current voltage and current per ch
             time.sleep(1)
 
     def DoTerminate(self):
@@ -93,7 +98,7 @@ class HamekProducer(pyeudaq.Producer):
 
 if __name__ == '__main__':
     # Parse program arguments
-    description = 'Start EUDAQ producer for Hamek PS'
+    description = 'EUDAQ producer for Hameg-PS'
     parser = argparse.ArgumentParser(prog='Hameg_producer',
                                      description=description,
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -104,7 +109,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    producer = HamekProducer('Hameg', args.r)
+    producer = HamegProducer('Hameg', args.r)
     print('connecting to runcontrol in ', args.r)
     producer.Connect()
     time.sleep(2)
