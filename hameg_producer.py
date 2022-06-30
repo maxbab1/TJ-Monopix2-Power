@@ -67,10 +67,13 @@ class HamegProducer(pyeudaq.Producer):
         self.channels.append(CHWrapper("CH2: PSUB/PWELL", self.power_mng.ch_bias))
         self.channels.append(CHWrapper("CH3: HV", self.power_mng.ch_hv))
         self.channels.append(CHWrapper("CH4: LV supply", self.power_mng.ch_chip))
-
-    def DoStartRun(self):
+        
         self.is_running = 1
         self.power_mng.startup()
+        
+
+    def DoStartRun(self):
+    	pass
 
         
     def DoStopRun(self):
@@ -83,6 +86,7 @@ class HamegProducer(pyeudaq.Producer):
             self.power_mng.shutdown()
 
     def RunLoop(self):
+        return
         while self.is_running:
             for ch in self.channels:
                 if self.is_running:
