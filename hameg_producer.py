@@ -55,11 +55,11 @@ class HamegProducer(pyeudaq.Producer):
         tmp = self.conf.Get('BIAS')  # voltage 'BIAS', Ch2
         bias = 0.0
         if tmp:
-            bias = float(tmp)
+            bias = float(tmp.replace(',', '.'))
         tmp = self.conf.Get('HV')  # voltage 'HV', Ch3
         hv = 0.0
         if tmp:
-            hv = float(tmp)
+            hv = float(tmp.replace(',', '.'))
 
         self.power_mng = PowerManager(self.conf.Get('SERIAL_PORT'), bias, hv)
 
