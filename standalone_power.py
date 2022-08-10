@@ -8,22 +8,22 @@
 # 
 # ------------------------------------------------------------
 #
-import os
-import yaml
 
-from src.bdaq_supply import PowerManager
-import time
-import signal
 import argparse
+import signal
+import time
 from datetime import datetime
 
-
+from src.bdaq_supply import PowerManager
+from src.monitor import Monitor
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--bias', action='store', nargs='*', help='Bias voltage for PSUB/PWELL on CH2 of PS')
 parser.add_argument('--hv', action='store', nargs='*', help='Bias voltage for HV on CH3 of PS')
 parser.add_argument('-f', action='store_true', default=None, help='accept nonzero Bias and HV at the same time')
 parser.add_argument('-p', default='/dev/ttyMP2', help='serial port')
+parser.add_argument('-m', action='store_true', default=None, help='enable online monitoring plots of currents '
+                                                                  '(requires gnuplot)')
 args = parser.parse_args()
 
 
@@ -56,20 +56,21 @@ else:
 if hv == 0 and bias == 0:
     print("WARNING: no bias nor HV selected")
 elif hv != 0 and bias != 0:
-    if(args.f):
+    if args.f:
         print("WARNING: bias and HV used at the same time")
     else:
         print("ERROR: bias and HV used at the same time (use -f to ignore this)")
         exit(1)
 
-if (bias != 0):
+if bias != 0:
     print("Bias voltage {:2.1f}V".format(bias))
 
-if (hv != 0):
+if hv != 0:
     print("HV voltage   {:2.1f}V".format(hv))
 
 UP = "\x1B[1A"
 CLR = "\x1B[0K"
+
 
 class CHWrapper:
     def __init__(self, name, channel):
@@ -96,21 +97,25 @@ with PowerManager(serial=args.p, bias=bias, hv=hv) as pm:
     chs.append(CHWrapper("CH2: PSUB/PWELL", pm.ch_bias))
     chs.append(CHWrapper("CH3: HV", pm.ch_hv))
     chs.append(CHWrapper("CH4: LV supply", pm.ch_chip))
+
+    gp = Monitor(args.m)
+    gp.init()
     
     while True:
         currtime = datetime.now().strftime("%H:%M:%S")
         print(" "*30, currtime)
         for l in chs:
             l.print()
-        time.sleep(1)
+        time.sleep(0.1)
         for l in chs:
             l.measure()
+
+        gp.add_values(chs[0].i, chs[1].i, chs[2].i, chs[3].i)
+        gp.plot()
         print(UP*(len(chs)*4+2))
     # -------      end testing-payload        -------
 
 
-
-exit(0)
 
 
 

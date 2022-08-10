@@ -36,7 +36,7 @@ class PowerManager():
         self.ps.reset()
         self.ch_chip.setVoltage(1.8)
         self.ch_chip.setCurrent(0.8)
-        self.ch_chip.setFuse(delay=10)
+        self.ch_chip.setFuse(delay=50)
         
         self.ch_bdaq.setVoltage(5.0)
         self.ch_bdaq.setCurrent(1.0)
@@ -44,14 +44,14 @@ class PowerManager():
         self.ch_chip.linkFuse(self.ch_bdaq.ch)
         
         self.ch_bias.setVoltage(0.0)
-        self.ch_bias.setCurrent(0.001)
+        self.ch_bias.setCurrent(0.003)
         self.ch_bias.setFuse(delay=50)
         self.ch_bias.linkFuse(self.ch_bdaq.ch)
         self.ch_bias.linkFuse(self.ch_chip.ch)
         self.ch_chip.linkFuse(self.ch_bias.ch)
         
         self.ch_hv.setVoltage(0.0)
-        self.ch_hv.setCurrent(0.001)
+        self.ch_hv.setCurrent(0.003)
         self.ch_hv.setFuse(delay=50)
         self.ch_hv.linkFuse(self.ch_bdaq.ch)
         self.ch_hv.linkFuse(self.ch_chip.ch)
