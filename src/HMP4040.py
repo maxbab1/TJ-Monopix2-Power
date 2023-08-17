@@ -82,6 +82,7 @@ class HMP4040:
         self.command("*RST")
 
     def verify(self):
+        self.command('*IDN?')   # usually the device does not respond the first time after establishing a connection
         line = self.command('*IDN?')
         if not line.startswith('HAMEG,HMP4040'):
             raise TypeError('Error: not a HAMEG HMP4040 but '+str(line))
