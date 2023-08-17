@@ -1,5 +1,6 @@
 # TJ-Monopix2-Power
 Power supply helper program for Hameg power supplies
+On a freshly powered on Supply, the first attempt sometimes fails, try to execute the script a second time in that case (known bug)
 
 # Usage
 
