@@ -44,14 +44,14 @@ class PowerManager():
         self.ch_chip.linkFuse(self.ch_bdaq.ch)
         
         self.ch_bias.setVoltage(0.0)
-        self.ch_bias.setCurrent(0.003)
+        self.ch_bias.setCurrent(0.008)
         self.ch_bias.setFuse(delay=50)
         self.ch_bias.linkFuse(self.ch_bdaq.ch)
         self.ch_bias.linkFuse(self.ch_chip.ch)
         self.ch_chip.linkFuse(self.ch_bias.ch)
         
         self.ch_hv.setVoltage(0.0)
-        self.ch_hv.setCurrent(0.003)
+        self.ch_hv.setCurrent(0.008)
         self.ch_hv.setFuse(delay=50)
         self.ch_hv.linkFuse(self.ch_bdaq.ch)
         self.ch_hv.linkFuse(self.ch_chip.ch)
@@ -68,7 +68,7 @@ class PowerManager():
                 self.ch_bias.setVoltage(v)
            
         if(self.hv != 0): 
-            for v in np.linspace(0., self.hv, 10):
+            for v in np.linspace(0., self.hv, 30):
                 self.ch_hv.setVoltage(v)
         
         print("Power is up!")
@@ -87,7 +87,7 @@ class PowerManager():
         if not before:
             print("Powering off...", end='', flush=True)
         if(self.hv != 0):
-            for v in np.linspace(self.hv, 0., 10):
+            for v in np.linspace(self.hv, 0., 20):
                 self.ch_hv.setVoltage(v)
         if(self.bias != 0):
             for v in np.linspace(self.bias, 0., 10):
