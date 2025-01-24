@@ -26,20 +26,19 @@ class PowerManager():
         self.shutdown()
     
     
-    
-    def startup(self):
+    def init(self):
         if not self.ps.allOff():
             print("WARNING: not all supplies were switched off!")
             self.shutdown(before=True)
             time.sleep(0.5)
-            
+
         self.ps.reset()
         self.ch_chip.setVoltage(1.8)
-        self.ch_chip.setCurrent(0.8)
+        self.ch_chip.setCurrent(2.5)
         self.ch_chip.setFuse(delay=50)
         
         self.ch_bdaq.setVoltage(5.0)
-        self.ch_bdaq.setCurrent(1.0)
+        self.ch_bdaq.setCurrent(2.0)
         self.ch_bdaq.setFuse(delay=50)
         self.ch_chip.linkFuse(self.ch_bdaq.ch)
         
@@ -63,15 +62,21 @@ class PowerManager():
         self.ch_chip.setOn(True)
         time.sleep(0.1)
         self.ch_bdaq.setOn(True)
-        if(self.bias != 0):
-            for v in np.linspace(0., self.bias, 10):
-                self.ch_bias.setVoltage(v)
-           
-        if(self.hv != 0): 
-            for v in np.linspace(0., self.hv, 30):
-                self.ch_hv.setVoltage(v)
-        
+
+    
+    def configure(self):
+        if self.ps.allOff():
+            self.init()
+        #if self.ch_bias.measVoltage() != 0 or self.ch_hv.measVoltage() !=0:
+         #   self.shutdown()
+          #  self.init()
+        self.rampUp()
         print("Power is up!")
+
+    def startup(self):
+        self.init()
+        self.configure()
+    
         #time.sleep(0.5)
         #print("Power is up, waiting for ping response...", end='', flush=True)
         #for i in range(20):
@@ -103,8 +108,24 @@ class PowerManager():
         if not before:
             print(" [Done]\ngood night!")
 
+    def rampDown(self):
+        if(self.hv != 0):
+            for v in np.linspace(self.hv, 0., 20):
+                self.ch_hv.setVoltage(v)
+        if(self.bias != 0):
+            for v in np.linspace(self.bias, 0., 10):
+                self.ch_bias.setVoltage(v)
 
-
+    def rampUp(self):
+        if(self.bias != 0):
+            for v in np.linspace(0., self.bias, 10):
+                self.ch_bias.setVoltage(v)
+           
+        if(self.hv != 0): 
+            for v in np.linspace(0., self.hv, 30):
+                self.ch_hv.setVoltage(v)
+        
+        
 
 
 

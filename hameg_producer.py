@@ -1,12 +1,12 @@
 #! /usr/bin/env python
-# load binary lib/pyeudaq.so
+#load binary lib/pyeudaq.so
 
 import time
 import argparse
-
 from src.bdaq_supply import PowerManager
 # from standalone_power import CHWrapper
 import pyeudaq
+
 
 
 class CHWrapper:
@@ -30,6 +30,7 @@ class CHWrapper:
         return f'{self.u} V {self.i * 1e3} mA'
 
 
+
 class HamegProducer(pyeudaq.Producer):
     def __init__(self, name, runctrl):
         pyeudaq.Producer.__init__(self, name, runctrl)
@@ -43,61 +44,92 @@ class HamegProducer(pyeudaq.Producer):
         if self.power_mng:
             self.power_mng.shutdown()
 
-    def DoInitialise(self):
-        self.ini = self.GetInitConfiguration()
-        # actually no init items needed, store for possible future uses
-
-    def DoConfigure(self):
-        self.conf = self.GetConfiguration()
-
-        #  TODO: generalize me, use Ch1, ..., Ch4 instead of Monopix2 voltage
-        #   names, maybe also make current and slope configurable
-        tmp = self.conf.Get('BIAS')  # voltage 'BIAS', Ch2
-        bias = 0.0
-        if tmp:
-            bias = float(tmp.replace(',', '.'))
-        tmp = self.conf.Get('HV')  # voltage 'HV', Ch3
-        hv = 0.0
-        if tmp:
-            hv = float(tmp.replace(',', '.'))
-
-        self.power_mng = PowerManager(self.conf.Get('SERIAL_PORT'), bias, hv)
-
-        self.channels.append(CHWrapper("CH1: BDAQ53 Board", self.power_mng.ch_bdaq))
-        self.channels.append(CHWrapper("CH2: PSUB/PWELL", self.power_mng.ch_bias))
-        self.channels.append(CHWrapper("CH3: HV", self.power_mng.ch_hv))
-        self.channels.append(CHWrapper("CH4: LV supply", self.power_mng.ch_chip))
-        
-        self.is_running = 1
-        self.power_mng.startup()
-        
-
-    def DoStartRun(self):
-    	pass
-
-        
-    def DoStopRun(self):
-        self.is_running = 0
-        self.power_mng.shutdown()
-
-    def DoReset(self):
-        self.is_running = 0
+    def handle_error(self, error):
+        print(f"Error occurred: {error}")
         if self.power_mng:
             self.power_mng.shutdown()
+
+    def DoInitialise(self):
+        try:
+            self.ini = self.GetInitConfiguration()
+            self.power_mng = PowerManager(self.ini.Get('SERIAL_PORT'), bias=0, hv=0)
+            self.power_mng.init()
+        except Exception as e:
+            self.handle_error(e)
+            raise
+
+    def DoConfigure(self):
+        try:
+            self.conf = self.GetConfiguration()
+            tmp = self.conf.Get('BIAS')  # voltage 'BIAS', Ch2
+            bias = 0.0
+            if tmp:
+                bias = float(tmp.replace(',', '.'))
+            tmp = self.conf.Get('HV')  # voltage 'HV', Ch3
+            hv = 0.0
+            if tmp:
+                hv = float(tmp.replace(',', '.'))
+
+            self.power_mng.bias=bias
+            self.power_mng.hv=hv
+            self.is_running = 1
+            self.power_mng.configure()
+        except Exception as e:
+            self.handle_error(e)
+            raise
+
+    def DoStartRun(self):
+        try:
+            if self.power_mng.ch_bias.measVoltage() == 0 and self.power_mng.ch_hv.measVoltage() == 0:
+                self.power_mng.rampUp()
+            
+        except Exception as e:
+            self.handle_error(e)
+            raise
+
+    def DoStopRun(self):
+        try:
+            self.is_running = False
+            if self.power_mng:
+                self.power_mng.rampDown()
+        except Exception as e:
+            self.handle_error(e)
+            raise
+
+    def DoReset(self):
+        try:
+            self.is_running = False
+            if self.power_mng:
+                self.power_mng.shutdown()
+        except Exception as e:
+            self.handle_error(e)
+            raise
 
     def RunLoop(self):
         return
-        while self.is_running:
-            for ch in self.channels:
-                if self.is_running:
-                    self.SetStatusTag(ch.name, ch.info())
-                    # we do not send any events, just updating the status with current voltage and current per ch
-            time.sleep(1)
+        try:
+            while self.is_running:
+                # Example: Status monitoring (if needed)
+                time.sleep(1)
+        except Exception as e:
+            self.handle_error(e)
+            raise
 
     def DoTerminate(self):
+        try:
+            if self.power_mng:
+                self.power_mng.shutdown()
+        except Exception as e:
+            self.handle_error(e)
+            raise
+     
+    def __enter__(self):
+        return self
+
+    def __exit__(self, a, b, c):
         if self.power_mng:
             self.power_mng.shutdown()
-            time.sleep(3)  # block until finished powering off
+   
 
 
 if __name__ == '__main__':
@@ -117,7 +149,9 @@ if __name__ == '__main__':
 
     producer = HamegProducer(args.n, args.r)
     print(f'producer {args.n} connecting to runcontrol in {args.r}')
-    producer.Connect()
-    time.sleep(2)
-    while producer.IsConnected():
-        time.sleep(1)
+    with producer as p:
+        p.Connect()
+        time.sleep(2)
+        while p.IsConnected():
+            time.sleep(1)
+
