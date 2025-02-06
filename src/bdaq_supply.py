@@ -77,14 +77,7 @@ class PowerManager():
         self.init()
         self.configure()
     
-        #time.sleep(0.5)
-        #print("Power is up, waiting for ping response...", end='', flush=True)
-        #for i in range(20):
-        #    time.sleep(1.1)
-        #    if os.system("ping -c 1 192.168.10.23 -t 1 > /dev/null") == 0:
-        #        print(" [ OK ]\n Connection to bdaq board ready now!")
-        #        break
-    
+
     
     """ disable all power supply rails in order - may be called with before==True at beginning 
     of script if at least one output was not disabled before (e.g. after a crash) """

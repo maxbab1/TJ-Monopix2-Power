@@ -39,6 +39,7 @@ class HamegProducer(pyeudaq.Producer):
         self.conf = None
         self.power_mng = None
         self.channels = []
+        self.power_cycle_at_stop = 0
 
     def __del__(self):
         if self.power_mng:
@@ -69,7 +70,7 @@ class HamegProducer(pyeudaq.Producer):
             hv = 0.0
             if tmp:
                 hv = float(tmp.replace(',', '.'))
-
+            self.power_cycle_at_stop = int(self.conf.as_dict().get('POWER_CYCLE_AT_STOP',0))
             self.power_mng.bias=bias
             self.power_mng.hv=hv
             self.is_running = 1
@@ -80,7 +81,9 @@ class HamegProducer(pyeudaq.Producer):
 
     def DoStartRun(self):
         try:
-            if self.power_mng.ch_bias.measVoltage() == 0 and self.power_mng.ch_hv.measVoltage() == 0:
+            if self.power_cycle_at_stop == True and self.power_mng.ps.allOff():
+                self.power_mng.startup()
+            elif self.power_mng.ch_bias.measVoltage() == 0 and self.power_mng.ch_hv.measVoltage() == 0:
                 self.power_mng.rampUp()
             
         except Exception as e:
@@ -89,9 +92,12 @@ class HamegProducer(pyeudaq.Producer):
 
     def DoStopRun(self):
         try:
-            self.is_running = False
-            if self.power_mng:
+            if self.power_cycle_at_stop == True and self.power_mng:
+                self.power_mng.shutdown()
+                self.power_mng.startup()
+            elif self.power_mng:
                 self.power_mng.rampDown()
+            self.is_running = False
         except Exception as e:
             self.handle_error(e)
             raise
