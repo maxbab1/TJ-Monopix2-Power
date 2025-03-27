@@ -53,12 +53,17 @@ else:
 
 if hv == 0 and psub == 0:
     print("WARNING: no bias nor HV selected")
+
 elif hv != 0 and psub != 0:
     if args.f:
         print("WARNING: psub and HV used at the same time")
     else:
         print("ERROR: bias and HV used at the same time (use -f to ignore this)")
         exit(1)
+
+if psub < 6.0:
+    print("ERROR: PSUB < 6V")
+    exit(1)
 
 pwell = 0.0
 if psub != 0:
