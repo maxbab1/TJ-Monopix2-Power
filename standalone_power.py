@@ -42,7 +42,6 @@ def append_log(ch_bdaq, ch_pwell, ch_psubwell, ch_chip, smu):
                f"{ch_psubwell.measVoltage():2.3f}, {ch_psubwell.measCurrent()*1e3:3.1f}, " \
                f"{ch_chip.measVoltage():2.3f}, {ch_chip.measCurrent()*1e3:3.1f}, " \
                f"{smu.get_voltage():2.3f}, {smu.get_current()*1e6:3.1f}"
-        print(line)
         f.write(f"{line}/n")
 
 # =========   begin handle ctrl-C    =========

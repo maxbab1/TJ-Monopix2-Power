@@ -11,8 +11,8 @@ class K2450smu:
         try:
             # Try to open the resource
             self.inst = self.rm.open_resource(port)
-            print(f" ")
-            print(f"Connected to: {self.inst.query('*IDN?')}")
+            # print(f" ")
+            # print(f"Connected to: {self.inst.query('*IDN?')}")
 
         except visa.errors.VisaIOError as e:
             print("ERROR: Could not connect to the instrument.")
