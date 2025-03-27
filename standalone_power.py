@@ -12,6 +12,7 @@
 import argparse
 import signal
 import time
+import os, datetime
 from datetime import datetime
 
 from src.bdaq_supply import PowerManager
@@ -24,9 +25,25 @@ parser.add_argument('-f', action='store_true', default=None, help='accept nonzer
 parser.add_argument('-p', default='/dev/ttyMP2', help='serial port')
 args = parser.parse_args()
 
+LOGDIR = 'logs/'
+if not os.path.exists(LOGDIR):
+    os.makedirs(LOGDIR)
+log_file = f"{LOGDIR}{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}_power_log.csv"
 
-
-
+def append_log(ch_bdaq, ch_pwell, ch_psubwell, ch_chip, smu):
+    file_exists = os.path.isfile(log_file)
+    with open(log_file, 'a', newline='') as f:
+        if not file_exists:
+            f.write(f'Time, U_FPGA/V, I_FPGA/mA, U_PWELL/V, I_PWELL/mA, U_PSUB/V, I_PSUBWELL/mA, U_LV/V, I_LV/mA, U_HV/V, I/HV/uA')
+        ts = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        line = f"{ts}, " \
+               f"{ch_bdaq.measVoltage():.3f}, {ch_bdaq.measCurrent()*1e3:3.1f}, " \
+               f"{ch_pwell.measVoltage():.3f}, {ch_pwell.measCurrent()*1e3:3.1f}, " \
+               f"{ch_psubwell.measVoltage():2.3f}, {ch_psubwell.measCurrent()*1e3:3.1f}, " \
+               f"{ch_chip.measVoltage():2.3f}, {ch_chip.measCurrent()*1e3:3.1f}, " \
+               f"{smu.get_voltage():2.3f}, {smu.get_current()*1e6:3.1f}"
+        print(line)
+        f.write(f"{line}/n")
 
 # =========   begin handle ctrl-C    =========
 def exit_handler(signum, frame):
@@ -106,23 +123,11 @@ class CHWrapper:
 with PowerManager(serial=args.p, psub=psub, pwell=pwell, hv=hv) as pm:
     # -------    begin the testing-payload    -------
     print("ctrl-C to poweroff again and exit")
-    chs = []
-    # chs.append(CHWrapper("CH1: BDAQ53 Board", pm.ch_bdaq))
-    # chs.append(CHWrapper("CH2: PSUB/PWELL", pm.ch_bias))
-    # chs.append(CHWrapper("CH3: HV", pm.ch_hv))
-    # chs.append(CHWrapper("CH4: LV supply", pm.ch_chip))
-    
+
     while True:
-        currtime = datetime.now().strftime("%H:%M:%S")
-        print(" "*30, currtime)
-        for l in chs:
-            l.print()
-        time.sleep(0.1)
-        for l in chs:
-            l.measure()
+        append_log(pm.ch_bdaq, pm.ch_pwell, pm.ch_psubwell, pm.ch_chip, pm.smu)
+        time.sleep(1)
 
-
-        print(UP*(len(chs)*4+2))
     # -------      end testing-payload        -------
 
 
