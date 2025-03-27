@@ -18,12 +18,10 @@ from src.bdaq_supply import PowerManager
 from src.monitor import Monitor
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--bias', action='store', nargs='*', help='Bias voltage for PSUB/PWELL on CH2 of PS')
-parser.add_argument('--hv', action='store', nargs='*', help='Bias voltage for HV on CH3 of PS')
+parser.add_argument('--psub', action='store', nargs='*', help='Bias voltage for PSUB (absolute value)')
+parser.add_argument('--hv', action='store', nargs='*', help='Bias voltage for HV')
 parser.add_argument('-f', action='store_true', default=None, help='accept nonzero Bias and HV at the same time')
 parser.add_argument('-p', default='/dev/ttyMP2', help='serial port')
-parser.add_argument('-m', action='store_true', default=None, help='enable online monitoring plots of currents '
-                                                                  '(requires gnuplot)')
 args = parser.parse_args()
 
 
@@ -38,12 +36,12 @@ def exit_handler(signum, frame):
 signal.signal(signal.SIGINT, exit_handler)
 # =========   end handle ctrl-C    =========
 
-if args.bias is None:
-    bias = 0
-elif len(args.bias) == 0:
-    bias = 3.0
+if args.psub is None:
+    psub = 0
+elif len(args.psub) == 0:
+    psub = 0.0
 else:
-    bias = float(args.bias[0])
+    psub = float(args.psub[0])
 
 if args.hv is None:
     hv = 0
@@ -53,17 +51,20 @@ else:
     hv = float(args.hv[0])
 
 
-if hv == 0 and bias == 0:
+if hv == 0 and psub == 0:
     print("WARNING: no bias nor HV selected")
-elif hv != 0 and bias != 0:
+elif hv != 0 and psub != 0:
     if args.f:
-        print("WARNING: bias and HV used at the same time")
+        print("WARNING: psub and HV used at the same time")
     else:
         print("ERROR: bias and HV used at the same time (use -f to ignore this)")
         exit(1)
 
-if bias != 0:
-    print("Bias voltage {:2.1f}V".format(bias))
+pwell = 0.0
+if psub != 0:
+    print("PSUB voltage {:2.1f}V".format(psub))
+    pwell = 6.0
+    print("PWELL voltage {:2.1f}V".format(pwell))
 
 if hv != 0:
     print("HV voltage   {:2.1f}V".format(hv))
@@ -89,17 +90,14 @@ class CHWrapper:
         print("")
 
 
-with PowerManager(serial=args.p, bias=bias, hv=hv) as pm:
+with PowerManager(serial=args.p, psub=psub, pwell=pwell, hv=hv) as pm:
     # -------    begin the testing-payload    -------
     print("ctrl-C to poweroff again and exit")
     chs = []
-    chs.append(CHWrapper("CH1: BDAQ53 Board", pm.ch_bdaq))
-    chs.append(CHWrapper("CH2: PSUB/PWELL", pm.ch_bias))
-    chs.append(CHWrapper("CH3: HV", pm.ch_hv))
-    chs.append(CHWrapper("CH4: LV supply", pm.ch_chip))
-
-    gp = Monitor(args.m)
-    gp.init()
+    # chs.append(CHWrapper("CH1: BDAQ53 Board", pm.ch_bdaq))
+    # chs.append(CHWrapper("CH2: PSUB/PWELL", pm.ch_bias))
+    # chs.append(CHWrapper("CH3: HV", pm.ch_hv))
+    # chs.append(CHWrapper("CH4: LV supply", pm.ch_chip))
     
     while True:
         currtime = datetime.now().strftime("%H:%M:%S")
@@ -110,8 +108,7 @@ with PowerManager(serial=args.p, bias=bias, hv=hv) as pm:
         for l in chs:
             l.measure()
 
-        gp.add_values(chs[0].i, chs[1].i, chs[2].i, chs[3].i)
-        gp.plot()
+
         print(UP*(len(chs)*4+2))
     # -------      end testing-payload        -------
 
