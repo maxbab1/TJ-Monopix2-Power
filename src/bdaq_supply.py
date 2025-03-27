@@ -32,14 +32,23 @@ class PowerManager():
     
     
     def init(self):
-        if not self.ps.allOff():
+        if not self.ps.allOff() or self.smu.isOn():
             if self.ch_psubwell.isOn():
+                vstart = self.ch_psubwell.measVoltage()
+                for v in np.arange(vstart, 0., -1):
+                    self.ch_psubwell.setVoltage(v)
                 self.ch_psubwell.setVoltage(0)
             if self.ch_pwell.isOn():
+                vstart = self.ch_pwell.measVoltage()
+                for v in np.arange(vstart, 0., -1):
+                    self.ch_pwell.setVoltage(v)
                 self.ch_pwell.setVoltage(0)
             if self.smu.isOn():
+                vstart = self.smu.get_voltage()
+                for v in np.arange(vstart, 0., -1):
+                    self.smu.set_voltage(v)
                 self.smu.set_voltage(0)
-            print("WARNING: not all supplies were switched off!")
+            
             self.shutdown(before=True)
             time.sleep(0.5)
 
