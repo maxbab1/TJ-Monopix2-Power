@@ -129,7 +129,7 @@ class PowerManager():
         if(self.hv != 0):
             for v in np.arange(self.hv, 0, -2):
                 self.smu.set_voltage(v)
-                time.sleep(0.1)
+                time.sleep(0.5)
             self.smu.set_voltage(0)
         
 
@@ -145,7 +145,7 @@ class PowerManager():
         if(self.hv != 0):
             for v in np.arange(0., self.hv, 1):
                 self.smu.set_voltage(v)
-                time.sleep(0.1)
+                time.sleep(0.5)
             self.smu.set_voltage(self.hv)
         
         
