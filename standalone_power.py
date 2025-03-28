@@ -34,14 +34,13 @@ def append_log(ch_bdaq, ch_pwell, ch_psubwell, ch_chip, smu):
     file_exists = os.path.isfile(log_file)
     with open(log_file, 'a', newline='') as f:
         if not file_exists:
-            f.write(f'Time, U_FPGA/V, I_FPGA/mA, U_PWELL/V, I_PWELL/mA, U_PSUB/V, I_PSUBWELL/mA, U_LV/V, I_LV/mA, U_HV/V, I_HV/uA\n')
+            f.write(f'Time, U_FPGA/V, U_PWELL/V, U_PSUB/V, U_LV/V, U_HV/V ,I_FPGA/mA, I_PWELL/mA, I_PSUBWELL/mA, I_LV/mA, I_HV/uA\n')
         ts = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         line = f"{ts}, " \
-               f"{ch_bdaq.measVoltage():.3f}, {ch_bdaq.measCurrent()*1e3:3.1f}, " \
-               f"{ch_pwell.measVoltage():.3f}, {ch_pwell.measCurrent()*1e3:3.1f}, " \
-               f"{ch_psubwell.measVoltage():2.3f}, {ch_psubwell.measCurrent()*1e3:3.1f}, " \
-               f"{ch_chip.measVoltage():2.3f}, {ch_chip.measCurrent()*1e3:3.1f}, " \
-               f"{smu.get_voltage():2.3f}, {smu.get_current()*1e6:3.1f}"
+               f"{ch_bdaq.measVoltage():.3f}, {ch_pwell.measVoltage():.3f}, {ch_psubwell.measVoltage():2.3f}, " \
+               f"{ch_chip.measVoltage():2.3f}, {smu.get_voltage():2.3f}, " \
+               f"{ch_bdaq.measCurrent()*1e3:3.1f}, {ch_pwell.measCurrent()*1e3:3.1f}, {ch_psubwell.measCurrent()*1e3:3.1f},  " \
+               f"{ch_chip.measCurrent()*1e3:3.1f}, {smu.get_current()*1e6:3.1f}" 
         f.write(f"{line}\n")
 
 # =========   begin handle ctrl-C    =========
