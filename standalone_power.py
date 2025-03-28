@@ -34,7 +34,7 @@ def append_log(ch_bdaq, ch_pwell, ch_psubwell, ch_chip, smu):
     file_exists = os.path.isfile(log_file)
     with open(log_file, 'a', newline='') as f:
         if not file_exists:
-            f.write(f'Time, U_FPGA/V, I_FPGA/mA, U_PWELL/V, I_PWELL/mA, U_PSUB/V, I_PSUBWELL/mA, U_LV/V, I_LV/mA, U_HV/V, I/HV/uA')
+            f.write(f'Time, U_FPGA/V, I_FPGA/mA, U_PWELL/V, I_PWELL/mA, U_PSUB/V, I_PSUBWELL/mA, U_LV/V, I_LV/mA, U_HV/V, I_HV/uA\n')
         ts = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         line = f"{ts}, " \
                f"{ch_bdaq.measVoltage():.3f}, {ch_bdaq.measCurrent()*1e3:3.1f}, " \
@@ -42,7 +42,7 @@ def append_log(ch_bdaq, ch_pwell, ch_psubwell, ch_chip, smu):
                f"{ch_psubwell.measVoltage():2.3f}, {ch_psubwell.measCurrent()*1e3:3.1f}, " \
                f"{ch_chip.measVoltage():2.3f}, {ch_chip.measCurrent()*1e3:3.1f}, " \
                f"{smu.get_voltage():2.3f}, {smu.get_current()*1e6:3.1f}"
-        f.write(f"{line}/n")
+        f.write(f"{line}\n")
 
 # =========   begin handle ctrl-C    =========
 def exit_handler(signum, frame):
