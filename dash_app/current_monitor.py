@@ -159,7 +159,7 @@ class CurrentDashboard:
                           # I_PWELL display
                         html.Div(
                             children=[
-                                html.H2("WELL"),
+                                html.H2("PWELL"),
                                 html.H1("---", id="i-pwell-display"),
                                 html.H1("---", id="u-pwell-display")
                             ],
@@ -169,7 +169,7 @@ class CurrentDashboard:
                         # I_PSUBWELL display
                         html.Div(
                             children=[
-                                html.H2("SUBWELL"),
+                                html.H2("PSUB - PWELL"),
                                 html.H1("---", id="i-psubwell-display"),
                                 html.H1("---", id="u-psubwell-display")
                             ],
