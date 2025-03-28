@@ -25,13 +25,14 @@ class CurrentDashboard:
         self.data = None
         self.channels = None
         self.file_path = None
+        self.default_channels = [4,5]
         self.app = dash.Dash(__name__,update_title=None, external_stylesheets=[dbc.themes.BOOTSTRAP])
         self.server = self.app.server
         
         
     
         self.update_csv_data()
-        self.figure = self.init_graph_build(self.channels)
+        self.figure = self.init_graph_build([' I_HV/uA'])
         self.setup_layout()
         
 
@@ -55,6 +56,18 @@ class CurrentDashboard:
             return False
         else:
             return True
+        
+    def init_graph_build(self, selected_channels):
+        fig = go.Figure()
+        for channel in selected_channels:
+            
+            fig.add_trace(go.Scatter(
+                x=self.timestamp,
+                y=self.data[channel],
+                mode='lines',
+                name=channel.split("/",1)[0]
+            ))
+        return self.build_dark_theme_graph(fig=fig)
 
 
     def setup_layout(self):
@@ -89,7 +102,7 @@ class CurrentDashboard:
                                             children=dcc.Checklist(
                                                 id='channel-selector',
                                                 options=[{'label': ch.split("/",1)[0], 'value': ch} for ch in self.channels],
-                                                value=self.channels,
+                                                value=[' I_HV/uA'],
                                                 inline=False,
                                                 inputStyle={'margin-right': '5px'},
                                                 labelStyle={'marginBottom': '10px',
@@ -180,16 +193,7 @@ class CurrentDashboard:
         className='main-container'  
     )
         
-    def init_graph_build(self, selected_channels):
-        fig = go.Figure()
-        for channel in selected_channels:
-            fig.add_trace(go.Scatter(
-                x=self.timestamp,
-                y=self.data[channel],
-                mode='lines',
-                name=channel.split("/",1)[0]
-            ))
-        return self.build_dark_theme_graph(fig=fig)
+    
 
     def build_dark_theme_graph(self,fig):
         fig.update_layout(
@@ -312,7 +316,6 @@ class CurrentDashboard:
     
     def update_graph(self, selected_channels):
         """Callback function to update the graph based on selected channels."""
-
         fig = go.Figure()
         for channel in selected_channels:
             fig.add_trace(go.Scatter(
