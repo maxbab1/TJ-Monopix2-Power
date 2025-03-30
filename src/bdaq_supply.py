@@ -127,7 +127,7 @@ class PowerManager():
                 self.ch_pwell.setVoltage(v)
             self.ch_pwell.setVoltage(0)
         if(self.hv != 0):
-            for v in np.arange(self.hv, 0, -2):
+            for v in np.arange(self.hv, 0, -1):
                 self.smu.set_voltage(v)
                 time.sleep(0.5)
             self.smu.set_voltage(0)
