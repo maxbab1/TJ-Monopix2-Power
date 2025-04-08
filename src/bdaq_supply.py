@@ -35,17 +35,19 @@ class PowerManager():
         if not self.ps.allOff() or self.smu.isOn():
             if self.ch_psubwell.isOn():
                 vstart = self.ch_psubwell.measVoltage()
-                for v in np.arange(vstart, 0., -1):
+                for v in np.arange(vstart, 0., -0.5):
                     self.ch_psubwell.setVoltage(v)
+                    time.sleep(0.1)
                 self.ch_psubwell.setVoltage(0)
             if self.ch_pwell.isOn():
                 vstart = self.ch_pwell.measVoltage()
-                for v in np.arange(vstart, 0., -1):
+                for v in np.arange(vstart, 0., -0.5):
                     self.ch_pwell.setVoltage(v)
+                    time.sleep(0.1)
                 self.ch_pwell.setVoltage(0)
             if self.smu.isOn():
                 vstart = self.smu.get_voltage()
-                for v in np.arange(vstart, 0., -1):
+                for v in np.arange(vstart, 0., -0.5):
                     self.smu.set_voltage(v)
                 self.smu.set_voltage(0)
             
@@ -119,12 +121,14 @@ class PowerManager():
 
     def rampDown(self):
         if(self.psubwell != 0):
-            for v in np.arange(self.psubwell, 0., -1):
+            for v in np.arange(self.psubwell, 0., -0.5):
                 self.ch_psubwell.setVoltage(v)
+                time.sleep(0.1)
             self.ch_psubwell.setVoltage(0)
         if(self.pwell != 0):
-            for v in np.arange(self.pwell, 0., -1):
+            for v in np.arange(self.pwell, 0., -0.5):
                 self.ch_pwell.setVoltage(v)
+                time.sleep(0.1)
             self.ch_pwell.setVoltage(0)
         if(self.hv != 0):
             for v in np.arange(self.hv, 0, -2):
@@ -135,12 +139,14 @@ class PowerManager():
 
     def rampUp(self):
         if(self.pwell != 0):
-            for v in np.arange(0., self.pwell, 0.5):
+            for v in np.arange(0., self.pwell, 0.25):
                 self.ch_pwell.setVoltage(v)
+                time.sleep(0.1)
             self.ch_pwell.setVoltage(self.pwell)
         if(self.psubwell != 0):
-            for v in np.arange(0., self.psubwell, 0.5):
+            for v in np.arange(0., self.psubwell, 0.25):
                 self.ch_psubwell.setVoltage(v)
+                time.sleep(0.1)
             self.ch_psubwell.setVoltage(self.psubwell)
         if(self.hv != 0):
             for v in np.arange(0., self.hv, 1):
