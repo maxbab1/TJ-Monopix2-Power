@@ -49,6 +49,7 @@ class PowerManager():
                 vstart = self.smu.get_voltage()
                 for v in np.arange(vstart, 0., -0.5):
                     self.smu.set_voltage(v)
+                    time.sleep(0.1)
                 self.smu.set_voltage(0)
             
             self.shutdown(before=True)
@@ -131,7 +132,7 @@ class PowerManager():
                 time.sleep(0.1)
             self.ch_pwell.setVoltage(0)
         if(self.hv != 0):
-            for v in np.arange(self.hv, 0, -2):
+            for v in np.arange(self.hv, 0, -0.5):
                 self.smu.set_voltage(v)
                 time.sleep(0.5)
             self.smu.set_voltage(0)
@@ -149,7 +150,7 @@ class PowerManager():
                 time.sleep(0.1)
             self.ch_psubwell.setVoltage(self.psubwell)
         if(self.hv != 0):
-            for v in np.arange(0., self.hv, 1):
+            for v in np.arange(0., self.hv, 0.5):
                 self.smu.set_voltage(v)
                 time.sleep(0.5)
             self.smu.set_voltage(self.hv)
