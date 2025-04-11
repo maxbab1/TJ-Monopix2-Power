@@ -18,8 +18,14 @@ from datetime import datetime
 from src.bdaq_supply import PowerManager
 from src.monitor import Monitor
 
+psub_limit = 10
+hv_limit   = 45
+
+
+
 parser = argparse.ArgumentParser()
-parser.add_argument('--psub', action='store', nargs='*', help='Bias voltage for PSUB (absolute value)')
+parser.add_argument('--psub', action='store', nargs='*', help='Bias voltage for PSUB (absolute value) at PWELL=6V (negative)')
+parser.add_argument('--pwell', action='store', nargs='*', help='Bias voltage for PWELL and PSUB, max 6V (neg)')
 parser.add_argument('--hv', action='store', nargs='*', help='Bias voltage for HV')
 parser.add_argument('-f', action='store_true', default=None, help='accept nonzero Bias and HV at the same time')
 parser.add_argument('-p', default='/dev/ttyMP2', help='serial port')
@@ -58,40 +64,58 @@ elif len(args.psub) == 0:
 else:
     psub = float(args.psub[0])
 
+if args.pwell is None:
+    pwell = 0
+elif len(args.pwell) == 0:
+    pwell = 0.0
+else:
+    pwell = float(args.pwell[0])
+
 if args.hv is None:
     hv = 0
 elif len(args.hv) == 0:
-    hv = 5.0
+    hv = 6.0
 else:
     hv = float(args.hv[0])
 
-
-if hv == 0 and psub == 0:
+if hv == 0 and psub == 0 and pwell == 0:
     print("WARNING: no bias nor HV selected")
-
-elif hv != 0 and psub != 0:
+elif hv != 0 and (psub != 0 or pwell != 0):
     if args.f:
-        print("WARNING: psub and HV used at the same time")
+        print("WARNING: psub/pwell and HV used at the same time")
     else:
-        print("ERROR: bias and HV used at the same time (use -f to ignore this)")
+        print("ERROR: psub/pwell and HV used at the same time (use -f to ignore this)")
         exit(1)
 
-if psub < 6.0 and hv == 0.0:
-    print("ERROR: PSUB < 6V")
+if psub != 0 and pwell != 0:
+        print("ERROR: psub and pwell cannot be specified at the same time")
+        print("       use --psub for PWELL = 6V and PSUB >= 6V (abs)")
+        print("       use --pwell for PWELL = PSUB <= 6V (abs)")
+        exit(1)
+
+if psub < 6.0 and hv == 0 and pwell == 0:
+    print("ERROR: PSUB > 6V")
     exit(1)
 
-if psub > 20.0:
-    print("ERROR: PSUB > 20V")
+if psub > psub_limit:
+    print(f"ERROR: PSUB > {psub_limit}V")
     exit(1)
 
-if hv > 45.0:
-    print("ERROR: HV > 45V")
+if pwell > 6:
+    print("ERROR: PWELL > 6V")
     exit(1)
 
-pwell = 0.0
-if psub != 0:
+if hv > hv_limit:
+    print(f"ERROR: HV > {hv_limit}V")
+    exit(1)
+
+if psub >= 6:
     print("PSUB voltage {:2.1f}V".format(psub))
     pwell = 6.0
+    print("PWELL voltage {:2.1f}V".format(pwell))
+elif pwell <= 6:
+    psub = pwell
+    print("PSUB voltage {:2.1f}V".format(psub))
     print("PWELL voltage {:2.1f}V".format(pwell))
 
 if hv != 0:
